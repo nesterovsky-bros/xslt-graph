@@ -12,7 +12,7 @@
     See https://en.wikipedia.org/wiki/Depth-first_search
       $root - a root vertex.
       $g - a graph to traverse.      
-      Returns a sequence of map that describes traversal.
+      Returns a sequence of maps that describes traversal.
         The map has following fields:
           from as item() - a vertex traversed from;
           to as item()  - a vertex traversed to;
