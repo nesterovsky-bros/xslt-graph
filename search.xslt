@@ -34,7 +34,7 @@
         $g,
         $is-depth-first,
         function($item as map(*), $visited as map(*), $result as map(*)*) 
-          as map(*)*
+          as map(*)+
         {
           $result, $item
         },

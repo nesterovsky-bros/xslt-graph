@@ -49,20 +49,16 @@
             [map { 'to': $vertex, 'depth': 0 }], 
             $g,
             false(),
-            function($item as map(*), $visited as map(*), $state as map(*)*) 
-              as map(*)*
+            function($item as map(*), $visited as map(*), $state as map(*)*)
+              as map(*)
             {
               map
               {
                 'visited': $visited,
-                'result': ($state?result, $item)
+                'result': ($state?result, $item?to)
               }
             },
-            map
-            {
-              'visited': $visited,
-              'result': ()
-            },
+            map { 'visited': $visited },
             $visited
           )"/>
 
@@ -72,7 +68,7 @@
             tail($vertices), 
             $g, 
             $search-result?visited, 
-            ($search-result?result?to, $result)
+            ($search-result?result, $result)
           )"/>
       </xsl:otherwise>
     </xsl:choose>
