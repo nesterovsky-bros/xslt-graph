@@ -134,7 +134,7 @@
         'priority' as item() as item priority;
         'value' as item()* as item value.
   -->
-  <xsl:function name="q:item-by-key" as="map(*)?">
+  <xsl:function name="q:item" as="map(*)?">
     <xsl:param name="q" as="map(*)"/>
     <xsl:param name="key" as="item()"/>
 
