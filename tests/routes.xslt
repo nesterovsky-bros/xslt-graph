@@ -8,19 +8,35 @@
   exclude-result-prefixes="xs g map array t">
 
   <xsl:import href="../graph.xslt"/>
-  <xsl:import href="../depth-first-search.xslt"/>
+  <xsl:import href="../search.xslt"/>
 
   <xsl:template match="/">
     <xsl:variable name="g" as="map(*)" select="t:create-routes()"/>
     <xsl:variable name="root" as="xs:string" select="'Frankfürt'"/>
 
     <xsl:message>
-      <xsl:for-each select="g:depth-first-search($root, $g)">
+      <xsl:text>Depth first:
+</xsl:text>
+
+      <xsl:for-each select="g:search($root, $g, true())">
         <xsl:value-of separator="" select="
-          string-join((for $i in 1 to ?depth return '  '), ''),
+          (for $i in 1 to ?depth return '  '),
           ?from!(., ' - '), ?to, 
           ?edge!(': ', g:edge-value(., $g))"/>
-        
+
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+
+      <xsl:text>
+Breadth first:
+</xsl:text>
+      <xsl:for-each select="g:search($root, $g, false())">
+        <xsl:value-of separator="" select="
+          (for $i in 1 to ?depth return '  '),
+          ?from!(., ' - '), ?to, 
+          ?edge!(': ', g:edge-value(., $g))"/>
+
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
