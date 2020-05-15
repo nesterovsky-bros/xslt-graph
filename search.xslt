@@ -33,13 +33,13 @@
         $root, 
         $g,
         $is-depth-first,
-        function($item as map(*), $visited as map(*), $result as map(*)*) 
-          as map(*)+
+        function($item as map(*), $visited as map(*), $state as map(*)) 
+          as map(*)
         {
-          $result, $item
+          map { 'result': ($state?result, $item) }
         },
-        ()
-      )"/>
+        map {}
+      )?result"/>
   </xsl:function>
 
   <!--
@@ -59,19 +59,19 @@
             edge as item() - an edge between vertices;
             depth as xs:integer - a path depth from the root.
         $visited as map(*) - a set of visited vertices.
-        $state - current state;
-        Returns new state.
-        If returned state is empty sequence then the traverse is finished.
+        $state - current state map;
+        Returns new state map.
+        If returned state has ?break = true() then the traverse is finished.
       $state - a state.
       Returns last state.
   -->
-  <xsl:function name="g:search" as="item()*">
+  <xsl:function name="g:search" as="map(*)">
     <xsl:param name="root" as="item()"/>
     <xsl:param name="g" as="map(*)"/>
     <xsl:param name="is-depth-first" as="xs:boolean"/>
     <xsl:param name="visitor"
-      as="function(map(*), map(*), item()*) as item()*"/>
-    <xsl:param name="state" as="item()*"/>
+      as="function(map(*), map(*), map(*)) as map(*)"/>
+    <xsl:param name="state" as="map(*)"/>
 
     <xsl:sequence select="
       g:search
@@ -100,19 +100,19 @@
             depth as xs:integer - a path depth from the root.
         $visited as map(*) - a set of visited vertices.
         $state - current state;
-        Returns new state.
-        If returned state is empty sequence then the traverse is finished.
-      $state - a state.
+        Returns new state map.
+        If returned state has ?break = true() then the traverse is finished.
+      $state - a state map.
       $visited - a set of visited vertices.
       Returns last state.
   -->
-  <xsl:function name="g:search" as="item()*">
+  <xsl:function name="g:search" as="map(*)">
     <xsl:param name="queue" as="array(map(*))"/>
     <xsl:param name="g" as="map(*)"/>
     <xsl:param name="is-depth-first" as="xs:boolean"/>
     <xsl:param name="visitor"
-      as="function(map(*), map(*), item()*) as item()*"/>
-    <xsl:param name="state" as="item()*"/>
+      as="function(map(*), map(*), map(*)) as map(*)"/>
+    <xsl:param name="state" as="map(*)"/>
     <xsl:param name="visited" as="map(*)"/>
 
     <xsl:variable name="item" as="item()?" select="
@@ -142,12 +142,12 @@
       <xsl:otherwise>
         <xsl:variable name="new-visited" as="map(*)"
           select="map:put($visited, $to, true())"/>
-        <xsl:variable name="new-state" as="item()*" 
+        <xsl:variable name="new-state" as="map(*)" 
           select="$visitor($item, $new-visited, $state)"/>
 
         <xsl:choose>
-          <xsl:when test="empty($new-state)">
-            <xsl:sequence select="$state"/>
+          <xsl:when test="xs:boolean($new-state?break)">
+            <xsl:sequence select="$new-state"/>
           </xsl:when>
           <xsl:otherwise>
             <xsl:variable name="new-queue" as="array(map(*))" select="

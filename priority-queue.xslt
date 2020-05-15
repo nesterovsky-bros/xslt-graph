@@ -32,9 +32,21 @@
     <xsl:param name="value" as="item()*"/>
 
     <xsl:variable name="keys" as="map(*)" select="$q?keys"/>
-    <xsl:variable name="items" as="array(*)" select="$q?items"/>
+    
+    <xsl:variable name="items" as="array(*)" select="
+      let $items := $q?items return
+      let $item := $keys($key) return
+        if (exists($item)) then
+          let 
+            $index := 
+              p:search($keys, $items, $item?priority, $key, 1, array:size($items))
+          return
+            array:remove($items, $index)
+        else
+          $items"/>
+    
     <xsl:variable name="index" as="xs:integer" 
-      select="p:search($q, $priority, $key, 1, array:size($items))"/>
+      select="p:search($keys, $items, $priority, $key, 1, array:size($items))"/>
 
     <xsl:sequence select="
       map
@@ -46,11 +58,7 @@
               $key,
               map { 'key': $key, 'priority': $priority, 'value': $value }
            ), 
-        'items': 
-          if ($index > 0) then
-            array:put($items, $index, $key)
-          else
-            array:insert-before($items, -$index, $key)
+        'items': array:insert-before($items, -$index, $key)
       }"/>
   </xsl:function>
 
@@ -74,7 +82,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:variable name="index" as="xs:integer" select="
-          p:search($q, $item?priority, $key, 1, array:size($items))"/>
+          p:search($keys, $items, $item?priority, $key, 1, array:size($items))"/>
 
         <xsl:sequence select="
           map
@@ -157,7 +165,8 @@
 
   <!--
     Searches an item by priority and key using binary search.
-      $q - original queue.
+      $keys - a map of keys to items.
+      $items - an array of items.
       $priority - an item priority.
       $key - an item key.
       $low - a low value of search range (including).
@@ -166,7 +175,8 @@
       index before insertion point.
   -->
   <xsl:function name="p:search" as="xs:integer">
-    <xsl:param name="q" as="map(*)"/>
+    <xsl:param name="keys" as="map(*)"/>
+    <xsl:param name="items" as="array(*)"/>
     <xsl:param name="priority" as="item()?"/>
     <xsl:param name="key" as="item()"/>
     <xsl:param name="low" as="xs:integer"/>
@@ -177,7 +187,7 @@
         <xsl:variable name="mid" as="xs:integer"
           select="($low + $high) idiv 2"/>
         <xsl:variable name="mid-item" as="map(*)" 
-          select="$q?items($mid)!$q?keys(.)"/>
+          select="$items($mid)!$keys(.)"/>
         <xsl:variable name="mid-priority" as="item()?" 
           select="$mid-item?priority"/>
         <xsl:variable name="mid-key" as="item()" select="$mid-item?key"/>
@@ -186,22 +196,22 @@
           <xsl:when test="
             ($mid-priority lt $priority) or
             (empty($mid-priority) and exists($priority))">
-            <xsl:sequence
-              select="p:search($q, $priority, $key, $mid + 1, $high)"/>
+            <xsl:sequence select="
+              p:search($keys, $items, $priority, $key, $mid + 1, $high)"/>
           </xsl:when>
           <xsl:when test="
             ($mid-priority gt $priority) or
             (exists($mid-priority) and empty($priority))">
-            <xsl:sequence
-              select="p:search($q, $priority, $key, $low, $mid - 1)"/>
+            <xsl:sequence select="
+              p:search($keys, $items, $priority, $key, $low, $mid - 1)"/>
           </xsl:when>
           <xsl:when test="$mid-key lt $key">
-            <xsl:sequence
-              select="p:search($q, $priority, $key, $mid + 1, $high)"/>
+            <xsl:sequence select="
+              p:search($keys, $items, $priority, $key, $mid + 1, $high)"/>
           </xsl:when>
           <xsl:when test="$mid-key gt $key">
-            <xsl:sequence
-              select="p:search($q, $priority, $key, $low, $mid - 1)"/>
+            <xsl:sequence select="
+              p:search($keys, $items, $priority, $key, $low, $mid - 1)"/>
           </xsl:when>
           <xsl:otherwise>
             <!-- Key found.-->
