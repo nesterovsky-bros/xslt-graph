@@ -18,6 +18,17 @@
   </xsl:function>
 
   <!--
+    Gets size of queue.
+      $q - a queue.
+      Returns a size of queue.
+  -->
+  <xsl:function name="q:size" as="xs:integer">
+    <xsl:param name="q" as="map(*)"/>
+
+    <xsl:sequence select="array:size($q?items)"/>
+  </xsl:function>
+
+  <!--
     Creates a priority queue adding a value.
       $q - original queue.
       $priority - a value priority.

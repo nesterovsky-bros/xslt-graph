@@ -7,6 +7,7 @@
   xmlns:t="public:this"
   exclude-result-prefixes="xs g map array t">
 
+  <xsl:import href="../functions.xslt"/>
   <xsl:import href="../graph.xslt"/>
   <xsl:import href="../search.xslt"/>
   <xsl:import href="../topological-sort.xslt"/>

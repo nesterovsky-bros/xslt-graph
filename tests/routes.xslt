@@ -7,8 +7,11 @@
   xmlns:t="public:this"
   exclude-result-prefixes="xs g map array t">
 
+  <xsl:import href="../functions.xslt"/>
   <xsl:import href="../graph.xslt"/>
   <xsl:import href="../search.xslt"/>
+  <xsl:import href="../depth-first-search.xslt"/>
+  <xsl:import href="../breadth-first-search.xslt"/>
 
   <xsl:template match="/">
     <xsl:variable name="g" as="map(*)" select="t:create-routes()"/>
@@ -18,7 +21,7 @@
       <xsl:text>Depth first:
 </xsl:text>
 
-      <xsl:for-each select="g:search($root, $g, true())">
+      <xsl:for-each select="g:depth-first-search($root, $g)">
         <xsl:value-of separator="" select="
           (for $i in 1 to ?depth return '  '),
           ?from!(., ' - '), ?to, 
@@ -31,10 +34,10 @@
       <xsl:text>
 Breadth first:
 </xsl:text>
-      <xsl:for-each select="g:search($root, $g, false())">
+      <xsl:for-each select="g:breadth-first-search($root, $g)">
         <xsl:value-of separator="" select="
           (for $i in 1 to ?depth return '  '),
-          ?from!(., ' - '), ?to, 
+          ?from!(., ' - '), ?to,
           ?edge!(': ', g:edge-value(., $g))"/>
 
         <xsl:text>
