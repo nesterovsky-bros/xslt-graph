@@ -77,9 +77,7 @@
     <xsl:param name="g" as="map(*)"/>
 
     <xsl:sequence select="
-      let 
-        $visited := g:dijkstra-search-visited($source, $target, $g)
-      return
+      let $visited := g:dijkstra-search-visited($source, $target, $g) return
         f:while
         (
           function($vertex as item()) { exists($visited($vertex)!?from) },
