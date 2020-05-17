@@ -9,7 +9,7 @@
   exclude-result-prefixes="xs f q g map array">
 
   <!--
-    An algorithm for finding the shortest paths between nodes in a graph.
+    An algorithm for finding the shortest paths between vertices in a graph.
     See https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm.
       
       $source - a source vertex.
@@ -31,7 +31,7 @@
   </xsl:function>
 
   <!--
-    An algorithm for finding the shortest paths between nodes in a graph.
+    An algorithm for finding the shortest paths between vertices in a graph.
     See https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm.
       
       $source - a source vertex.
@@ -56,7 +56,7 @@
   </xsl:function>
 
   <!--
-    An algorithm for finding the shortest paths between nodes in a graph.
+    An algorithm for finding the shortest paths between vertices in a graph.
     See https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm.
       
       $source - a source vertex.
@@ -88,7 +88,7 @@
   </xsl:function>
 
   <!--
-    An algorithm for finding the shortest paths between nodes in a graph.
+    An algorithm for finding the shortest paths between vertices in a graph.
     See https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm.
       
       $source - a source vertex.
@@ -140,7 +140,7 @@
                           $from-distance + $distance
                   }
           return
-            if (exists($target) and ($target = $from)) then
+            if ($target eq $from) then
               map { 'queue': q:create(), 'visited': $visited }
             else if (empty($neighbors)) then
               map { 'queue': $queue, 'visited': $visited }
