@@ -72,9 +72,9 @@ Breadth first:
       {
         'vertices': function() { map:keys($vertices) }, 
         'edges': function() { $routes }, 
-        'edge-value': function($edge as map(*)) as xs:integer* { $edge?km },
-        'edge-vertices': function($edge as map(*)) as xs:string+ { $edge?from, $edge?to }, 
-        'vertex-edges': function($vertex as xs:string) as map(*)* { $vertices($vertex) }
+        'edge-value': function($edge as map(*)) { $edge?km },
+        'edge-vertices': function($edge as map(*)) { $edge?from, $edge?to }, 
+        'vertex-edges': function($vertex as xs:string) { $vertices($vertex) }
       }"/>
   </xsl:function>
 

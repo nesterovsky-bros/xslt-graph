@@ -58,15 +58,9 @@
       {
         'vertices': function() { map:keys($vertices) }, 
         'edges': function() { $routes }, 
-        'edge-value': function($edge as map(*)) as xs:integer* { $edge?value },
-        'edge-vertices': function($edge as map(*)) as xs:integer+ 
-         { 
-           $edge?from, $edge?to 
-         },
-        'vertex-edges': function($vertex as xs:integer) as map(*)*
-         { 
-            $vertices($vertex) 
-         }
+        'edge-value': function($edge as map(*)) { $edge?value },
+        'edge-vertices': function($edge as map(*)) { $edge?from, $edge?to },
+        'vertex-edges': function($vertex as xs:integer) { $vertices($vertex) }
       }"/>
   </xsl:function>
 

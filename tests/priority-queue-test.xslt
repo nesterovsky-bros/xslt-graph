@@ -18,7 +18,7 @@
       q:remove(., 'B')!t:print-queue(.)!
       q:add(., 0, '-', 'value 0')!t:print-queue(.)!
       q:tail(.)!t:print-queue(.)!
-      q:head(.)   "/>
+      q:head(.)"/>
 
     <xsl:message>
       <xsl:text>

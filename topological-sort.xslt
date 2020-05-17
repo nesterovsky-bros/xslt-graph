@@ -7,7 +7,7 @@
   exclude-result-prefixes="xs f g map">
 
   <!--
-    Returns vertices in topological sort order
+    Returns vertices in topological sort order.
     See https://en.wikipedia.org/wiki/Topological_sorting
       $g - a graph to traverse.      
       Returns a sequence of vertices.
@@ -19,7 +19,7 @@
   </xsl:function>
   
   <!--
-    Returns vertices in topological sort reverse order
+    Returns vertices in reverse topological sort order.
     See https://en.wikipedia.org/wiki/Topological_sorting
       $g - a graph to traverse.      
       Returns a sequence of vertices.

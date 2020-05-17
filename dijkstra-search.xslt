@@ -30,7 +30,6 @@
     <xsl:sequence select="g:dijkstra-search-visited($source, (), $g)"/>
   </xsl:function>
 
-
   <!--
     An algorithm for finding the shortest paths between nodes in a graph.
     See https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm.
