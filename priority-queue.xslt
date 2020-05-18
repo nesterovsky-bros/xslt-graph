@@ -10,22 +10,17 @@
   <!-- A priority queue API. -->
 
   <!--
-    Creates empty priority queue.
+    Empty priority queue.
+  -->
+  <xsl:variable name="q:empty" as="map(*)"
+    select="map { 'keys': map {}, 'items': [] }"/>
+
+  <!--
+    Create an empty priority queue.
       Returns a map representing a priority queue.
   -->
   <xsl:function name="q:create" as="map(*)">
-    <xsl:sequence select="map { 'keys': map {}, 'items': [] }"/>
-  </xsl:function>
-
-  <!--
-    Gets size of queue.
-      $q - a queue.
-      Returns a size of queue.
-  -->
-  <xsl:function name="q:size" as="xs:integer">
-    <xsl:param name="q" as="map(*)"/>
-
-    <xsl:sequence select="array:size($q?items)"/>
+    <xsl:sequence select="$q:empty"/>
   </xsl:function>
 
   <!--
@@ -42,35 +37,31 @@
     <xsl:param name="key" as="item()"/>
     <xsl:param name="value" as="item()*"/>
 
-    <xsl:variable name="keys" as="map(*)" select="$q?keys"/>
-    
-    <xsl:variable name="items" as="array(*)" select="
+    <xsl:sequence select="
+      let $keys := $q?keys return
       let $items := $q?items return
       let $item := $keys($key) return
-        if (exists($item)) then
-          let 
-            $index := 
-              p:search($keys, $items, $item?priority, $key, 1, array:size($items))
+      let $items :=
+        if (empty($item)) then
+          $items
+        else
+          let $priority := $item?priority return
+          let $index :=
+            p:search($keys, $items, $priority, $key, 1, array:size($items))
           return
             array:remove($items, $index)
-        else
-          $items"/>
-    
-    <xsl:variable name="index" as="xs:integer" 
-      select="p:search($keys, $items, $priority, $key, 1, array:size($items))"/>
-
-    <xsl:sequence select="
-      map
-      {
-        'keys': 
-           map:put
-           (
-              $keys,
-              $key,
-              map { 'key': $key, 'priority': $priority, 'value': $value }
-           ), 
-        'items': array:insert-before($items, -$index, $key)
-      }"/>
+      return
+      let $index :=
+        p:search($keys, $items, $priority, $key, 1, array:size($items))
+      return
+      let $item := 
+        map { 'key': $key, 'priority': $priority, 'value': $value } 
+      return
+        map
+        {
+          'keys': map:put($keys, $key, $item), 
+          'items': array:insert-before($items, -$index, $key)
+        }"/>
   </xsl:function>
 
   <!--
@@ -83,26 +74,33 @@
     <xsl:param name="q" as="map(*)"/>
     <xsl:param name="key" as="item()"/>
 
-    <xsl:variable name="keys" as="map(*)" select="$q?keys"/>
-    <xsl:variable name="items" as="array(*)" select="$q?items"/>
-    <xsl:variable name="item" as="map(*)?" select="$keys($key)"/>
+    <xsl:sequence select="
+      let $keys := $q?keys return
+      let $items := $q?items return
+      let $item := $keys($key) return
+        if (empty($item)) then
+          $q
+        else
+          let $priority := $item?priority return
+          let $index :=
+            p:search($keys, $items, $priority, $key, 1, array:size($items))
+          return
+            map
+            {
+              'keys': map:remove($keys, $key), 
+              'items': array:remove($items, $index)
+            }"/>
+  </xsl:function>
 
-    <xsl:choose>
-      <xsl:when test="empty($item)">
-        <xsl:sequence select="$q"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:variable name="index" as="xs:integer" select="
-          p:search($keys, $items, $item?priority, $key, 1, array:size($items))"/>
+  <!--
+    Gets size of queue.
+      $q - a queue.
+      Returns a size of queue.
+  -->
+  <xsl:function name="q:size" as="xs:integer">
+    <xsl:param name="q" as="map(*)"/>
 
-        <xsl:sequence select="
-          map
-          {
-            'keys': map:remove($keys, $key), 
-            'items': array:remove($items, $index)
-          }"/>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:sequence select="array:size($q?items)"/>
   </xsl:function>
 
   <!--
@@ -116,12 +114,7 @@
   <xsl:function name="q:head" as="map(*)?">
     <xsl:param name="q" as="map(*)"/>
 
-    <xsl:sequence select="
-      let $items := $q?items return
-        if (array:size($items) = 0) then
-          ()
-        else
-          array:head($items)!$q?keys(.)"/>
+    <xsl:sequence select="array:head($q?items)!$q?keys(.)"/>
   </xsl:function>
 
   <!--
@@ -134,14 +127,11 @@
 
     <xsl:sequence select="
       let $items := $q?items return
-        if (array:size($items) = 0) then
-          $q
-        else
-          map
-          {
-            'keys': map:remove($q?keys, array:head($items)), 
-            'items': array:tail($items)
-          }"/>
+        map
+        {
+          'keys': map:remove($q?keys, array:head($items)), 
+          'items': array:tail($items)
+        }"/>
   </xsl:function>
 
   <!--

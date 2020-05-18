@@ -112,8 +112,8 @@
     <xsl:sequence select="
       f:while
       (
-        function($state as item()+) { q:size($state[2]) > 0 },
-        function($state as item()+) 
+        function($state as item()*) { q:size($state[2]) > 0 },
+        function($state as item()*) 
         {
           let $queue := q:tail($state[2]) return
           let $item := q:head($state[2])?value return
@@ -142,30 +142,28 @@
             if ($target = $from) then
               (0, q:create(), $visited)
             else if (empty($neighbors)) then
-              (0, $queue, $visited)
+              $state
             else
-              f:while
+              fold-left
               (
-                function($state as item()+) { exists($neighbors[$state[1]]) },
-                function($state as item()+) 
+                $neighbors,
+                (0, $queue, $visited),
+                function($state as item()*, $neighbor as map(*)) 
                 {
-                  let $index := $state[1] return
                   let $queue := $state[2] return
                   let $visited := $state[3] return
-                  let $neighbor := $neighbors[$index] return
                   let $to := $neighbor?to return
                   let $distance := $neighbor?distance return
                   let $item := $visited($to) return
                     if (empty($item) or ($distance lt $item?distance)) then
                       (
-                        $index + 1,
+                        0,
                         q:add($queue, $distance, $to, $neighbor),
                         map:put($visited, $to, $neighbor)
                       )
                     else
-                      ($index + 1, $queue, $visited)
-                },
-                (1, $queue, $visited)
+                      (0, $queue, $visited)
+                }
               )
         },
         let $item := map { 'to': $source } return
