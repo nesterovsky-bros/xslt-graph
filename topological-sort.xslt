@@ -30,7 +30,7 @@
     <xsl:sequence select="
       f:while
       (
-        function($state as map(*)) { exists(head($state?vertices)) },
+        function($state as map(*)) { exists($state?vertices) },
         function($state as map(*)) 
         {
           let $visited := $state?visited return

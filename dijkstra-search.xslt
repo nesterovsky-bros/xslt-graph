@@ -4,9 +4,10 @@
   xmlns:f="xslt:functions:2020"
   xmlns:q="xslt:priority-queue:2020"
   xmlns:g="xslt:graph-api:2020"
+  xmlns:p="private:xslt:graph-api:2020"
   xmlns:map="http://www.w3.org/2005/xpath-functions/map"
   xmlns:array="http://www.w3.org/2005/xpath-functions/array"
-  exclude-result-prefixes="xs f q g map array">
+  exclude-result-prefixes="xs f q g p map array">
 
   <!--
     An algorithm for finding the shortest paths between vertices in a graph.
@@ -111,83 +112,69 @@
     <xsl:sequence select="
       f:while
       (
-        function($state as map(*)) { q:size($state?queue) > 0 },
-        function($state as map(*)) { $state?visited },
-        function($state as map(*), $visited as map(*)) 
+        function($state as item()+) { q:size($state[2]) > 0 },
+        function($state as item()+) 
         {
-          let $visited := $state?visited return
-          let $queue := q:tail($state?queue) return
-          let $item := q:head($state?queue)?value return
+          let $queue := q:tail($state[2]) return
+          let $item := q:head($state[2])?value return
+          let $visited := $state[3] return
           let $from := $item?to return
-          let $from-distance := $item?distance return
-          let
-            $neighbors :=
-              for $edge in g:vertex-edges($from, $g) return
-              let $distance := g:edge-value($edge, $g) return
-              for $to in g:edge-vertices($edge, $g) return
-                if ($to = $from) then
-                  ()
-                else
-                  map 
-                  { 
-                    'from': $from,
-                    'to': $to,
-                    'edge': $edge,
-                    'distance': 
-                        if (empty($from-distance)) then
-                          $distance
-                        else
-                          $from-distance + $distance
-                  }
+          let $total := $item?distance return
+          let $neighbors :=
+            for $edge in g:vertex-edges($from, $g) return
+            let $distance := g:edge-value($edge, $g) return
+            for $to in g:edge-vertices($edge, $g) return
+              if ($to = $from) then
+                ()
+              else
+                map 
+                { 
+                  'from': $from,
+                  'to': $to,
+                  'edge': $edge,
+                  'distance': 
+                    if (empty($total)) then
+                      $distance
+                    else
+                      $total + $distance
+                }
           return
-            if ($target eq $from) then
-              map { 'queue': q:create(), 'visited': $visited }
+            if ($target = $from) then
+              (0, q:create(), $visited)
             else if (empty($neighbors)) then
-              map { 'queue': $queue, 'visited': $visited }
+              (0, $queue, $visited)
             else
-              f:repeat
+              f:while
               (
-                function($state as map(*)) { empty($neighbors[$state?index]) },
-                function($state as map(*)) { $state },
-                function($state as map(*), $result as map(*)) 
+                function($state as item()+) { exists($neighbors[$state[1]]) },
+                function($state as item()+) 
                 {
-                  let $queue := $state?queue return
-                  let $visited := $state?visited return
-                  let $index := $state?index return
+                  let $index := $state[1] return
+                  let $queue := $state[2] return
+                  let $visited := $state[3] return
                   let $neighbor := $neighbors[$index] return
                   let $to := $neighbor?to return
                   let $distance := $neighbor?distance return
                   let $item := $visited($to) return
-                  if (empty($item) or ($distance lt $item?distance)) then
-                      map 
-                      { 
-                        'index': $index + 1,
-                        'queue': q:add($queue, $distance, $to, $neighbor),
-                        'visited': map:put($visited, $to, $neighbor)
-                      }
+                    if (empty($item) or ($distance lt $item?distance)) then
+                      (
+                        $index + 1,
+                        q:add($queue, $distance, $to, $neighbor),
+                        map:put($visited, $to, $neighbor)
+                      )
                     else
-                      map 
-                      { 
-                        'index': $index + 1,
-                        'queue': $queue,
-                        'visited': $visited
-                      }
+                      ($index + 1, $queue, $visited)
                 },
-                map
-                {
-                  'index': 1,
-                  'queue': $queue, 
-                  'visited': $visited
-                }
-              )[last()]
+                (1, $queue, $visited)
+              )
         },
         let $item := map { 'to': $source } return
-          map 
-          {
-            'queue': q:add(q:create(), (), $source, $item),
-            'visited': map { $source: $item }
-          }
-      )[last()]"/>
+          (
+            0,
+            q:add(q:create(), (), $source, $item),
+            map { $source: $item }
+          )
+      )[3]"/>
   </xsl:function>
 
 </xsl:stylesheet>
