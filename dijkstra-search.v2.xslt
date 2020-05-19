@@ -141,8 +141,6 @@
           return
             if ($target = $from) then
               (q:create(), $visited)
-            else if (empty($neighbors)) then
-              ($queue, $visited)
             else
               fold-left
               (

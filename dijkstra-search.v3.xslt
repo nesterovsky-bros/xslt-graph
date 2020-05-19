@@ -141,8 +141,6 @@
           return
             if ($target = $from) then
               map { 'queue': q:create(), 'visited': $visited }
-            else if (empty($neighbors)) then
-              map { 'queue': $queue, 'visited': $visited }
             else
               fold-left
               (
