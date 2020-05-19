@@ -45,16 +45,10 @@
         if (empty($item)) then
           $items
         else
-          let $priority := $item?priority return
-          let $index :=
-            p:search($keys, $items, $priority, $key, 1, array:size($items))
-          return
-            array:remove($items, $index)
+          array:remove($items, p:find($keys, $items, $item?priority, $key))
       return
-      let $index :=
-        p:search($keys, $items, $priority, $key, 1, array:size($items))
-      return
-      let $item := 
+      let $index := p:find($keys, $items, $priority, $key) return
+      let $item :=
         map { 'key': $key, 'priority': $priority, 'value': $value } 
       return
         map
@@ -81,15 +75,12 @@
         if (empty($item)) then
           $q
         else
-          let $priority := $item?priority return
-          let $index :=
-            p:search($keys, $items, $priority, $key, 1, array:size($items))
-          return
-            map
-            {
-              'keys': map:remove($keys, $key), 
-              'items': array:remove($items, $index)
-            }"/>
+          map
+          {
+            'keys': map:remove($keys, $key), 
+            'items': 
+              array:remove($items, p:find($keys, $items, $item?priority, $key))
+          }"/>
   </xsl:function>
 
   <!--
@@ -170,12 +161,31 @@
       $items - an array of items.
       $priority - an item priority.
       $key - an item key.
-      $low - a low value of search range (including).
-      $low - a high value of search range (including).
       Retuns a found index, of negative value of the closest 
       index before insertion point.
   -->
-  <xsl:function name="p:search" as="xs:integer">
+  <xsl:function name="p:find" as="xs:integer">
+    <xsl:param name="keys" as="map(*)"/>
+    <xsl:param name="items" as="array(*)"/>
+    <xsl:param name="priority" as="item()?"/>
+    <xsl:param name="key" as="item()"/>
+
+    <xsl:sequence 
+      select="p:find($keys, $items, $priority, $key, 1, array:size($items))"/>
+  </xsl:function>
+
+  <!--
+    Searches an item by priority and key using binary search.
+      $keys - a map of keys to items.
+      $items - an array of items.
+      $priority - an item priority.
+      $key - an item key.
+      $low - a low value of search range (including).
+      $high - a high value of search range (including).
+      Retuns a found index, of negative value of the closest 
+      index before insertion point.
+  -->
+  <xsl:function name="p:find" as="xs:integer">
     <xsl:param name="keys" as="map(*)"/>
     <xsl:param name="items" as="array(*)"/>
     <xsl:param name="priority" as="item()?"/>
@@ -183,48 +193,36 @@
     <xsl:param name="low" as="xs:integer"/>
     <xsl:param name="high" as="xs:integer"/>
 
-    <xsl:choose>
-      <xsl:when test="$low le $high">
-        <xsl:variable name="mid" as="xs:integer"
-          select="($low + $high) idiv 2"/>
-        <xsl:variable name="mid-item" as="map(*)" 
-          select="$items($mid)!$keys(.)"/>
-        <xsl:variable name="mid-priority" as="item()?" 
-          select="$mid-item?priority"/>
-        <xsl:variable name="mid-key" as="item()" select="$mid-item?key"/>
-
-        <xsl:choose>
-          <xsl:when test="
+    <xsl:sequence select="
+      if ($low gt $high) then
+        (: Key not found. :)
+        -$low
+      else
+        let $mid := ($low + $high) idiv 2 return
+        let $mid-item := $items($mid)!$keys(.) return
+        let $mid-priority := $mid-item?priority return
+        let $mid-key := $mid-item?key return
+          if 
+          (
             ($mid-priority lt $priority) or
-            (empty($mid-priority) and exists($priority))">
-            <xsl:sequence select="
-              p:search($keys, $items, $priority, $key, $mid + 1, $high)"/>
-          </xsl:when>
-          <xsl:when test="
+            (empty($mid-priority) and exists($priority))
+          )
+          then
+            p:find($keys, $items, $priority, $key, $mid + 1, $high)
+          else if
+          (
             ($mid-priority gt $priority) or
-            (exists($mid-priority) and empty($priority))">
-            <xsl:sequence select="
-              p:search($keys, $items, $priority, $key, $low, $mid - 1)"/>
-          </xsl:when>
-          <xsl:when test="$mid-key lt $key">
-            <xsl:sequence select="
-              p:search($keys, $items, $priority, $key, $mid + 1, $high)"/>
-          </xsl:when>
-          <xsl:when test="$mid-key gt $key">
-            <xsl:sequence select="
-              p:search($keys, $items, $priority, $key, $low, $mid - 1)"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <!-- Key found.-->
-            <xsl:sequence select="$mid"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:when>
-      <xsl:otherwise>
-        <!-- Key not found.-->
-        <xsl:sequence select="-$low"/>
-      </xsl:otherwise>
-    </xsl:choose>
+            (exists($mid-priority) and empty($priority))
+          )
+          then
+            p:find($keys, $items, $priority, $key, $low, $mid - 1)
+          else if ($mid-key lt $key) then
+            p:find($keys, $items, $priority, $key, $mid + 1, $high)
+          else if ($mid-key gt $key) then
+            p:find($keys, $items, $priority, $key, $low, $mid - 1)
+          else
+            (: Key found. :)
+            $mid"/>
   </xsl:function>
 
 </xsl:stylesheet>
