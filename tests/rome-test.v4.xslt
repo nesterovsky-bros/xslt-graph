@@ -19,7 +19,7 @@
     <xsl:variable name="target" as="xs:integer" select="351"/>
     <!--<xsl:variable name="target" as="xs:integer" select="2052"/>-->
     
-    <!--<xsl:message>-->
+    <xsl:message>
       <xsl:text>Shortest path:
 </xsl:text>
 
@@ -32,7 +32,7 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-    <!--</xsl:message>-->
+    </xsl:message>
   </xsl:template>
 
   <!--

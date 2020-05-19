@@ -77,15 +77,27 @@
     <xsl:param name="target" as="item()"/>
     <xsl:param name="g" as="map(*)"/>
 
-    <xsl:sequence select="
-      let $visited := g:dijkstra-search-visited($source, $target, $g) return
-        f:while
-        (
-          $target,
-          function($vertex as item()) { exists($visited($vertex)!?from) },
-          function($vertex as item()) { $visited($vertex) },
-          function($vertex as item(), $item as map(*)) { $item?from }
-        )"/>
+    <xsl:variable name="visited" as="map(*)" 
+      select="g:dijkstra-search-visited($source, $target, $g)"/>
+
+    <xsl:iterate select="1 to map:size($visited)">
+      <xsl:param name="target" as="item()" select="$target"/>
+
+      <xsl:variable name="item" as="map(*)?" select="$visited($target)"/>
+
+      <xsl:choose>
+        <xsl:when test="empty($item!?from)">
+          <xsl:break/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:sequence select="$item"/>
+
+          <xsl:next-iteration>
+            <xsl:with-param name="target" select="$item?from"/>
+          </xsl:next-iteration>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:iterate>
   </xsl:function>
 
   <!--
@@ -109,23 +121,27 @@
     <xsl:param name="target" as="item()?"/>
     <xsl:param name="g" as="map(*)"/>
 
-    <xsl:sequence select="
-      f:while
-      (
-        let $item := map { 'to': $source } return
-          (
-            q:add(q:create(), (), $source, $item),
-            map { $source: $item }
-          ),
-        function($state as item()*) { q:size($state[1]) > 0 },
-        function($state as item()*) 
-        {
-          let $queue := q:tail($state[1]) return
-          let $item := q:head($state[1])?value return
-          let $visited := $state[2] return
-          let $from := $item?to return
-          let $total := $item?distance return
-          let $neighbors :=
+    <xsl:variable name="item" as="map(*)" select="map { 'to': $source }"/>
+
+    <xsl:iterate select="g:vertices($g)">
+      <xsl:param name="queue" as="map(*)"
+        select="q:add(q:create(), (), $source, $item)"/>
+      <xsl:param name="visited" as="map(*)"
+        select="map { $source: $item }"/>
+
+      <xsl:on-completion select="$visited"/>
+
+      <xsl:choose>
+        <xsl:when test="q:size($queue) = 0">
+          <xsl:break select="$visited"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:variable name="item" as="map(*)" select="q:head($queue)?value"/>
+          <xsl:variable name="queue" as="map(*)" select="q:tail($queue)"/>
+          <xsl:variable name="from" as="item()" select="$item?to"/>
+          <xsl:variable name="total" as="item()?" select="$item?distance"/>
+
+          <xsl:variable name="neighbors" as="map(*)*" select="
             for $edge in g:vertex-edges($from, $g) return
             let $distance := g:edge-value($edge, $g) return
             for $to in g:edge-vertices($edge, $g) return
@@ -142,43 +158,47 @@
                       $distance
                     else
                       $total + $distance
-                }
-          return
-            if ($target = $from) then
-              (q:create(), $visited)
-            else
-              p:process-neighbors($neighbors, $queue, $visited)
-        }
-      )[2]"/>
-  </xsl:function>
+                }"/>
 
-  <xsl:function name="p:process-neighbors" as="item()*">
-    <xsl:param name="neighbors" as="map(*)*"/>
-    <xsl:param name="queue" as="map(*)"/>
-    <xsl:param name="visited" as="map(*)"/>
+          <xsl:choose>
+            <xsl:when test="$target = $from">
+              <xsl:break select="$visited"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:variable name="next" as="item()*">
+                <xsl:iterate select="$neighbors">
+                  <xsl:param name="queue" as="map(*)" select="$queue"/>
+                  <xsl:param name="visited" as="map(*)" select="$visited"/>
 
-    <xsl:iterate select="$neighbors">
-      <xsl:param name="queue" as="map(*)" select="$queue"/>
-      <xsl:param name="visited" as="map(*)" select="$visited"/>
+                  <xsl:on-completion select="$queue, $visited"/>
 
-      <xsl:on-completion select="$queue, $visited"/>
+                  <xsl:variable name="neighbor" as="map(*)" select="."/>
+                  <xsl:variable name="to" as="item()" select="$neighbor?to"/>
+                  <xsl:variable name="distance" as="item()" select="$neighbor?distance"/>
+                  <xsl:variable name="item" as="item()?" select="$visited($to)"/>
 
-      <xsl:variable name="neighbor" as="map(*)" select="."/>
-      <xsl:variable name="to" as="item()" select="$neighbor?to"/>
-      <xsl:variable name="distance" as="item()" select="$neighbor?distance"/>
-      <xsl:variable name="item" as="item()?" select="$visited($to)"/>
+                  <xsl:choose>
+                    <xsl:when test="empty($item) or ($distance lt $item?distance)">
+                      <xsl:next-iteration>
+                        <xsl:with-param name="queue"
+                          select="q:add($queue, $distance, $to, $neighbor)"/>
+                        <xsl:with-param name="visited"
+                          select="map:put($visited, $to, $neighbor)"/>
+                      </xsl:next-iteration>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:next-iteration/>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:iterate>
+              </xsl:variable>
 
-      <xsl:choose>
-        <xsl:when test="empty($item) or ($distance lt $item?distance)">
-          <xsl:next-iteration>
-            <xsl:with-param name="queue"
-              select="q:add($queue, $distance, $to, $neighbor)"/>
-            <xsl:with-param name="visited"
-              select="map:put($visited, $to, $neighbor)"/>
-          </xsl:next-iteration>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:next-iteration/>
+              <xsl:next-iteration>
+                <xsl:with-param name="queue" select="$next[1]"/>
+                <xsl:with-param name="visited" select="$next[2]"/>
+              </xsl:next-iteration>
+            </xsl:otherwise>
+          </xsl:choose>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:iterate>
