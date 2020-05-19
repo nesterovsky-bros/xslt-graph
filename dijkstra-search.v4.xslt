@@ -2,7 +2,6 @@
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:f="xslt:functions:2020"
-  xmlns:q="xslt:priority-queue:2020"
   xmlns:g="xslt:graph-api:2020"
   xmlns:p="private:xslt:graph-api:2020"
   xmlns:map="http://www.w3.org/2005/xpath-functions/map"
@@ -177,19 +176,14 @@
                   <xsl:variable name="distance" as="item()" select="$neighbor?distance"/>
                   <xsl:variable name="item" as="item()?" select="$visited($to)"/>
 
-                  <xsl:choose>
-                    <xsl:when test="empty($item) or ($distance lt $item?distance)">
-                      <xsl:next-iteration>
-                        <xsl:with-param name="queue"
-                          select="q:add($queue, $distance, $to, $neighbor)"/>
-                        <xsl:with-param name="visited"
-                          select="map:put($visited, $to, $neighbor)"/>
-                      </xsl:next-iteration>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:next-iteration/>
-                    </xsl:otherwise>
-                  </xsl:choose>
+                  <xsl:if test="empty($item) or ($distance lt $item?distance)">
+                    <xsl:next-iteration>
+                      <xsl:with-param name="queue"
+                        select="q:add($queue, $distance, $to, $neighbor)"/>
+                      <xsl:with-param name="visited"
+                        select="map:put($visited, $to, $neighbor)"/>
+                    </xsl:next-iteration>
+                  </xsl:if>
                 </xsl:iterate>
               </xsl:variable>
 

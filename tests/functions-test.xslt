@@ -28,11 +28,7 @@
         function($state as map(*)) { $state?index le 100000 },
         function($state as map(*)) 
         { 
-          map 
-          { 
-            'index': $state?index + 1, 
-            'sum': $state?sum + $state?index
-          } 
+          map { 'index': $state?index + 1, 'sum': $state?sum + $state?index }
         }
       )?sum"/>
 

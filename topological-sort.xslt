@@ -27,33 +27,21 @@
   <xsl:function name="g:topological-sort-reverse" as="item()*">
     <xsl:param name="g" as="map(*)"/>
 
-    <xsl:sequence select="
-      f:while
-      (
-        map 
-        {
-          'vertices': g:vertices($g),
-          'visited': map {}
-        },
-        function($state as map(*)) { exists($state?vertices) },
-        function($state as map(*)) 
-        {
-          let $visited := $state?visited return
-          let $vertex := head($state?vertices) return
-            if ($visited($vertex)) then
-              ()
-            else
-              reverse(g:search($vertex, $g, false(), $visited)?to)
-        },
-        function($state as map(*), $items as item()*)
-        {
-          map
-          {
-            'vertices': tail($state?vertices),
-            'visited': map:merge(($state?visited, $items!map { .: true() }))
-          }
-        }
-      )"/>
+    <xsl:iterate select="g:vertices($g)">
+      <xsl:param name="visited" as="map(*)" select="map {}"/>
+
+      <xsl:variable name="vertex" as="item()" select="."/>
+
+      <xsl:if test="not($visited($vertex))">
+        <xsl:variable name="items" as="item()*" 
+          select="reverse(g:search($vertex, $g, false(), $visited)?to)"/>
+
+        <xsl:next-iteration>
+          <xsl:with-param name="visited" 
+            select="map:merge(($visited, $items!map { .: true() }))"/>
+        </xsl:next-iteration>
+      </xsl:if>
+    </xsl:iterate>
   </xsl:function>
 
 </xsl:stylesheet>

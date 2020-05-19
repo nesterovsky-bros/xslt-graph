@@ -5,7 +5,7 @@
   exclude-result-prefixes="xs f">
   
   <!-- A functions API. -->
-
+  
   <!--
     A while cycle. Calls f:while template.
         
@@ -84,48 +84,6 @@
   </xsl:function>
 
   <!--
-    Returns leading subsequence of items in order until 
-    a condition is not sutisfied for some item.
-      
-    $items as item()* - a sequence of items.
-    $condition as 
-      function($item as item(), $index as xs:integer) as xs:boolean -
-      a take condition.
-    Returns leading subsequence of items.
-  -->
-  <xsl:function name="f:take-while" as="item()*">
-    <xsl:param name="items" as="item()*"/>
-    <xsl:param name="condition" 
-      as="function(item(), xs:integer) as xs:boolean"/>
-
-    <xsl:call-template name="f:take-while">
-      <xsl:with-param name="items" select="$items"/>
-      <xsl:with-param name="condition" select="$condition"/>
-    </xsl:call-template>
-  </xsl:function>
-
-  <!--
-    Returns trailing subsequence of items in order skiping items
-    while a condition is sutisfied for items.
-      
-    $items as item()* - a sequence of items.
-    $condition as 
-      function($item as item(), $index as xs:integer) as xs:boolean -
-      a take condition.
-    Returns trailing subsequence of items.
-  -->
-  <xsl:function name="f:skip-while" as="item()*">
-    <xsl:param name="items" as="item()*"/>
-    <xsl:param name="condition" 
-      as="function(item(), xs:integer) as xs:boolean"/>
-
-    <xsl:call-template name="f:skip-while">
-      <xsl:with-param name="items" select="$items"/>
-      <xsl:with-param name="condition" select="$condition"/>
-    </xsl:call-template>
-  </xsl:function>
-
-  <!--
     A while cycle:
       If $condition($state) is true() then
         $action($state) is called to produce a subset of result;
@@ -195,70 +153,6 @@
         <xsl:with-param name="next" select="$next"/>
       </xsl:call-template>
     </xsl:if>
-  </xsl:template>
-
-  <!--
-    Returns leading subsequence of items in order until 
-    a condition is not sutisfied for some item.
-      
-    $items as item()* - a sequence of items.
-    $condition as 
-      function($item as item(), $index as xs:integer) as xs:boolean -
-      a take condition.
-    $index as xs:integer - current index.
-    Returns leading subsequence of items.
-  -->
-  <xsl:template name="f:take-while" as="item()*">
-    <xsl:param name="items" as="item()*"/>
-    <xsl:param name="index" as="xs:integer" select="1"/>
-    <xsl:param name="condition"
-      as="function(item(), xs:integer) as xs:boolean"/>
-
-    <xsl:variable name="item" as="item()?" select="head($items)"/>
-
-    <xsl:if test="exists($item) and $condition($item, $index)">
-      <xsl:sequence select="$item"/>
-
-      <xsl:call-template name="f:take-while">
-        <xsl:with-param name="items" select="tail($items)"/>
-        <xsl:with-param name="index" select="$index + 1"/>
-        <xsl:with-param name="condition" select="$condition"/>
-      </xsl:call-template>
-    </xsl:if>
-  </xsl:template>
-
-  <!--
-    Returns trailing subsequence of items in order skiping items
-    while a condition is sutisfied for items.
-      
-    $items as item()* - a sequence of items.
-    $condition as 
-      function($item as item(), $index as xs:integer) as xs:boolean -
-      a take condition.
-    $index as xs:integer - current index.
-    Returns trailing subsequence of items.
-  -->
-  <xsl:template name="f:skip-while" as="item()*">
-    <xsl:param name="items" as="item()*"/>
-    <xsl:param name="index" as="xs:integer" select="1"/>
-    <xsl:param name="condition"
-      as="function(item(), xs:integer) as xs:boolean"/>
-
-    <xsl:variable name="item" as="item()?" select="head($items)"/>
-    <xsl:variable name="tail" as="item()*" select="tail($items)"/>
-
-    <xsl:choose>
-      <xsl:when test="exists($item) and $condition($item, $index)">
-        <xsl:call-template name="f:skip-while">
-          <xsl:with-param name="items" select="$tail"/>
-          <xsl:with-param name="index" select="$index + 1"/>
-          <xsl:with-param name="condition" select="$condition"/>
-        </xsl:call-template>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:sequence select="$tail"/>
-      </xsl:otherwise>
-    </xsl:choose>
   </xsl:template>
 
 </xsl:stylesheet>
