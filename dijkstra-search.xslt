@@ -162,7 +162,7 @@
                         map:put($visited, $to, $neighbor)
                       )
                     else
-                      (0, $queue, $visited)
+                      $state
                 }
               )
         },

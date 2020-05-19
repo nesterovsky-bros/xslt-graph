@@ -162,7 +162,7 @@
                         'visited': map:put($visited, $to, $neighbor)
                       }
                     else
-                      map { 'queue': $queue, 'visited': $visited }
+                      $state
                 }
               )
         },
