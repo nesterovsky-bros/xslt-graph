@@ -13,10 +13,10 @@
     <xsl:variable name="items" as="xs:integer*" select="
       f:while
       (
+        1,
         function($index as xs:integer) { $index le 100000 },
         function($index as xs:integer) { $index },
-        function($index as xs:integer, $item as xs:integer) { $index + 1 },
-        1
+        function($index as xs:integer, $item as xs:integer) { $index + 1 }
       )"/>
 
     <xsl:message select="$items"/>
@@ -24,18 +24,17 @@
     <xsl:variable name="sum" as="xs:integer" select="
       f:while
       (
+        map { 'index': 1, 'sum': 0 },
         function($state as map(*)) { $state?index le 100000 },
-        function($state as map(*)) { $state?sum },
-        function($state as map(*), $sum as xs:integer) 
+        function($state as map(*)) 
         { 
           map 
           { 
             'index': $state?index + 1, 
             'sum': $state?sum + $state?index
           } 
-        },
-        map { 'index': 1, 'sum': 0 }
-      )[last()]"/>
+        }
+      )?sum"/>
 
     <xsl:message select="$sum"/>
   </xsl:template>

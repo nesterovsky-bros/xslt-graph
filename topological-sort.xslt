@@ -30,6 +30,11 @@
     <xsl:sequence select="
       f:while
       (
+        map 
+        {
+          'vertices': g:vertices($g),
+          'visited': map {}
+        },
         function($state as map(*)) { exists($state?vertices) },
         function($state as map(*)) 
         {
@@ -47,11 +52,6 @@
             'vertices': tail($state?vertices),
             'visited': map:merge(($state?visited, $items!map { .: true() }))
           }
-        },
-        map 
-        {
-          'vertices': g:vertices($g),
-          'visited': map {}
         }
       )"/>
   </xsl:function>

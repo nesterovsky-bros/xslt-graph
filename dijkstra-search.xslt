@@ -81,10 +81,10 @@
       let $visited := g:dijkstra-search-visited($source, $target, $g) return
         f:while
         (
+          $target,
           function($vertex as item()) { exists($visited($vertex)!?from) },
           function($vertex as item()) { $visited($vertex) },
-          function($vertex as item(), $item as map(*)) { $item?from },
-          $target
+          function($vertex as item(), $item as map(*)) { $item?from }
         )"/>
   </xsl:function>
 
@@ -112,6 +112,12 @@
     <xsl:sequence select="
       f:while
       (
+        let $item := map { 'to': $source } return
+          (
+            0,
+            q:add(q:create(), (), $source, $item),
+            map { $source: $item }
+          ),
         function($state as item()*) { q:size($state[2]) > 0 },
         function($state as item()*) 
         {
@@ -163,13 +169,7 @@
                       $state
                 }
               )
-        },
-        let $item := map { 'to': $source } return
-          (
-            0,
-            q:add(q:create(), (), $source, $item),
-            map { $source: $item }
-          )
+        }
       )[3]"/>
   </xsl:function>
 

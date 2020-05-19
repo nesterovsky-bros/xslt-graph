@@ -28,6 +28,11 @@
     <xsl:sequence select="
       f:while
       (
+        map 
+        { 
+          'queue': [ map { 'to': $root, 'depth': 0 } ],
+          'visited': $visited
+        },
         function($state as map(*)) { array:size($state?queue) > 0 },
         function($state as map(*))
         {
@@ -70,11 +75,6 @@
                         array:join(($tail, $items)),
                     'visited': $visited
                   }
-        },
-        map 
-        { 
-          'queue': [ map { 'to': $root, 'depth': 0 } ],
-          'visited': $visited
         }
       )"/>
   </xsl:function>
