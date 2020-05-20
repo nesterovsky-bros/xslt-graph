@@ -10,7 +10,6 @@
   <xsl:import href="../functions.xslt"/>
   <xsl:import href="../priority-queue.xslt"/>
   <xsl:import href="../graph.xslt"/>
-  <xsl:import href="../search.xslt"/>
   <xsl:import href="../dijkstra-search.v3.xslt"/>  
 
   <xsl:template match="/">
@@ -51,25 +50,22 @@
           'to': xs:integer($values[3]),
           'length': xs:integer($values[4])
         }"/>
-    
-    <xsl:variable name="vertices" as="map(*)" select="
-      map:merge
-      (
-        $roads!(map { ?from : . }, map { ?to : . }),
-        map { 'duplicates': 'combine' }
-      )"/>
+
+    <xsl:variable name="vertices" as="xs:integer*"
+      select="distinct-values($roads!(?from, ?to))"/>
+    <!--<xsl:variable name="in-edges" as="map(*)" select="
+      map:merge($roads!map { ?to : . }, map { 'duplicates': 'combine' })"/>-->
+    <xsl:variable name="out-edges" as="map(*)" select="
+      map:merge($roads!map { ?from : . }, map { 'duplicates': 'combine' })"/>
 
     <xsl:sequence select="
       map
       {
-        'vertices': function() { map:keys($vertices) }, 
+        'vertices': function() { $vertices }, 
         'edges': function() { $roads }, 
         'edge-value': function($edge as map(*)) { $edge?length },
         'edge-vertices': function($edge as map(*)) { $edge?from, $edge?to },
-        'vertex-edges': function($vertex as xs:integer) 
-        { 
-          $vertices($vertex)[?from = $vertex] 
-        }
+        'vertex-edges': function($vertex as xs:integer) { $out-edges($vertex) }
       }"/>
   </xsl:function>
 

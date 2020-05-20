@@ -7,9 +7,10 @@
   xmlns:t="public:this"
   exclude-result-prefixes="xs g map array t">
 
+  <xsl:import href="../functions.xslt"/>
   <xsl:import href="../priority-queue.xslt"/>
   <xsl:import href="../graph.xslt"/>
-  <xsl:import href="../dijkstra-search.xslt"/>  
+  <xsl:import href="../dijkstra-search.v1.xslt"/>  
 
   <xsl:template match="/">
     <xsl:variable name="g" as="map(*)" select="t:create-graph()"/>

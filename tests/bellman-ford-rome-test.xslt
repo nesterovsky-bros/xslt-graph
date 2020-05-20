@@ -7,9 +7,8 @@
   xmlns:t="public:this"
   exclude-result-prefixes="xs g map array t">
 
-  <xsl:import href="../priority-queue.xslt"/>
   <xsl:import href="../graph.xslt"/>
-  <xsl:import href="../dijkstra-search.xslt"/>  
+  <xsl:import href="../bellman-ford-search.xslt"/>  
 
   <xsl:template match="/">
     <xsl:variable name="g" as="map(*)" select="t:create-graph()"/>
@@ -21,7 +20,7 @@
       <xsl:text>Shortest path:
 </xsl:text>
 
-      <xsl:for-each select="g:dijkstra-search($source, $target, $g)">
+      <xsl:for-each select="g:bellman-ford-search($source, $target, true(), $g)">
         <xsl:value-of separator="" select="
           ?from, ' - ', ?to, 
           ', distance = ', g:edge-value(?edge, $g),
@@ -50,7 +49,7 @@
           'length': xs:integer($values[4])
         }"/>
 
-    <xsl:variable name="vertices" as="xs:integer*"
+    <xsl:variable name="vertices" as="xs:integer*" 
       select="distinct-values($roads!(?from, ?to))"/>
     <!--<xsl:variable name="in-edges" as="map(*)" select="
       map:merge($roads!map { ?to : . }, map { 'duplicates': 'combine' })"/>-->

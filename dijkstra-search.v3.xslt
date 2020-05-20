@@ -7,7 +7,7 @@
   xmlns:p="private:xslt:graph-api:2020"
   xmlns:map="http://www.w3.org/2005/xpath-functions/map"
   xmlns:array="http://www.w3.org/2005/xpath-functions/array"
-  exclude-result-prefixes="xs f q g p map array">
+  exclude-result-prefixes="xs f q g map array">
 
   <!--
     An algorithm for finding the shortest paths between vertices in a graph.

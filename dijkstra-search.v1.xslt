@@ -113,15 +113,16 @@
       (
         let $item := map { 'to': $source } return
           (
+            0,
             q:add(q:create(), (), $source, $item),
             map { $source: $item }
           ),
-        function($state as item()*) { q:size($state[1]) > 0 },
+        function($state as item()*) { q:size($state[2]) > 0 },
         function($state as item()*) 
         {
-          let $queue := q:tail($state[1]) return
-          let $item := q:head($state[1])?value return
-          let $visited := $state[2] return
+          let $queue := q:tail($state[2]) return
+          let $item := q:head($state[2])?value return
+          let $visited := $state[3] return
           let $from := $item?to return
           let $total := $item?distance return
           let $neighbors :=
@@ -144,21 +145,22 @@
                 }
           return
             if ($target = $from) then
-              (q:create(), $visited)
+              (0, q:create(), $visited)
             else
               fold-left
               (
                 $neighbors,
-                ($queue, $visited),
+                (0, $queue, $visited),
                 function($state as item()*, $neighbor as map(*)) 
                 {
-                  let $queue := $state[1] return
-                  let $visited := $state[2] return
+                  let $queue := $state[2] return
+                  let $visited := $state[3] return
                   let $to := $neighbor?to return
                   let $distance := $neighbor?distance return
                   let $item := $visited($to) return
                     if (empty($item) or ($distance lt $item?distance)) then
                       (
+                        0,
                         q:add($queue, $distance, $to, $neighbor),
                         map:put($visited, $to, $neighbor)
                       )
@@ -167,7 +169,7 @@
                 }
               )
         }
-      )[2]"/>
+      )[3]"/>
   </xsl:function>
 
 </xsl:stylesheet>

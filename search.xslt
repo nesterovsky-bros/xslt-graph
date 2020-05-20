@@ -2,10 +2,9 @@
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:g="xslt:graph-api:2020"
-  xmlns:f="xslt:functions:2020"
   xmlns:map="http://www.w3.org/2005/xpath-functions/map"
   xmlns:array="http://www.w3.org/2005/xpath-functions/array"
-  exclude-result-prefixes="xs g f map array">
+  exclude-result-prefixes="xs g map array">
 
   <!--
     Traverses graph starting from the root vertex.

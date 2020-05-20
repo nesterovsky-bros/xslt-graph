@@ -1,10 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:f="xslt:functions:2020"
   xmlns:g="xslt:graph-api:2020"
   xmlns:map="http://www.w3.org/2005/xpath-functions/map"
-  exclude-result-prefixes="xs f g map">
+  exclude-result-prefixes="xs g map">
 
   <!--
     Returns vertices in topological sort order.
