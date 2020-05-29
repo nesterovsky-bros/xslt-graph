@@ -38,7 +38,7 @@
           <xsl:break/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:variable name="item" as="item()" select="array:head($queue)"/>
+          <xsl:variable name="item" as="map(*)" select="array:head($queue)"/>
           <xsl:variable name="queue" as="array(map(*))"
             select="array:tail($queue)"/>
           <xsl:variable name="to" as="item()" select="$item?to"/>

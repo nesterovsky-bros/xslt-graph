@@ -7,7 +7,6 @@
   xmlns:t="public:this"
   exclude-result-prefixes="xs g map array t">
 
-  <xsl:import href="../priority-queue.xslt"/>
   <xsl:import href="../graph.xslt"/>
   <xsl:import href="../articulation-points.xslt"/>
 
