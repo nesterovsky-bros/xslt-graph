@@ -34,8 +34,6 @@
         <xsl:when test="$state = 0">
           <xsl:variable name="index" as="xs:integer" select="$index + 1"/>
 
-          <!--<xsl:message select="'0: vertex', $vertex, 'result', $result"/>-->
-
           <xsl:next-iteration>
             <xsl:with-param name="state" select="1"/>
             <xsl:with-param name="index" select="$index"/>
@@ -62,8 +60,6 @@
                 else
                   $result"/>
 
-              <!--<xsl:message select="'1: vertex', $vertex, 'next', $next, 'result', $result"/>-->
-
               <xsl:next-iteration>
                 <xsl:with-param name="result" select="$result"/>
                 <xsl:with-param name="vertices" select="$vertices"/>
@@ -80,8 +76,6 @@
                   'vertices': $vertices
                 }"/>
 
-              <!--<xsl:message select="'2: vertex', $vertex, 'result', $result"/>-->
-
               <xsl:next-iteration>
                 <xsl:with-param name="stack" 
                   select="array:insert-before($stack, 1, $frame)"/>
@@ -95,8 +89,6 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:if test="$articulation gt 0">
-            <!--<xsl:message select="'3: articulation', $vertex"/>-->
-
             <xsl:sequence select="$vertex"/>
           </xsl:if>
 
@@ -116,8 +108,6 @@
                   $frame?articulation + 1
                 else
                   $frame?articulation"/>
-
-              <!--<xsl:message select="'4: vertex', $vertex, 'result', $result"/>-->
 
               <xsl:variable name="result" as="xs:integer" select="
                 if ($frame?result lt $result) then
