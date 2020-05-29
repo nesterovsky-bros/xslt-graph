@@ -9,7 +9,7 @@
 
   <xsl:import href="../priority-queue.xslt"/>
   <xsl:import href="../graph.xslt"/>
-  <xsl:import href="../dijkstra-search.v4.xslt"/>  
+  <xsl:import href="dijkstra-search.v4.xslt"/>  
 
   <xsl:template match="/">
     <xsl:variable name="g" as="map(*)" select="t:create-graph()"/>
