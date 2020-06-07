@@ -8,35 +8,35 @@
   exclude-result-prefixes="xs q g map array">
 
   <!--
-    An algorithm to return Articulation Points of the graph.
+    An algorithm to return Biconnected conponents of connected graph.
     See
       https://en.wikipedia.org/wiki/Biconnected_component
       https://github.com/nesterovsky-bros/xslt-graph/wiki/Algorithm-for-Biconnected-components.
       
       $g - a graph to traverse.      
-      Returns a sequence of Articulation Points.
+      Returns a sequence of of arrays, where each array denotes a biconnected subgraph.
   -->
-  <xsl:function name="g:articulation-points" as="item()*">
+  <xsl:function name="g:biconnected-components" as="array(*)*">
     <xsl:param name="g" as="map(*)"/>
 
-    <xsl:sequence select="g:articulation-points(head(g:vertices($g)), $g)"/>
+    <xsl:sequence select="g:biconnected-components(head(g:vertices($g)), $g)"/>
   </xsl:function>
   
   <!--
-    An algorithm to return Articulation Points of the graph.
+    An algorithm to return Biconnected conponents of connected graph.
     See
       https://en.wikipedia.org/wiki/Biconnected_component
       https://github.com/nesterovsky-bros/xslt-graph/wiki/Algorithm-for-Biconnected-components.
       
       $vertex - an initial vertex.
       $g - a graph to traverse.      
-      Returns a sequence of Articulation Points.
+      Returns a sequence of of arrays, where each array denotes a biconnected subgraph.
   -->
-  <xsl:function name="g:articulation-points" as="item()*">
+  <xsl:function name="g:biconnected-components" as="array(*)*">
     <xsl:param name="vertex" as="item()"/>
     <xsl:param name="g" as="map(*)"/>
 
-    <xsl:iterate select="g:edges($g)!(1 to 4)">
+    <xsl:iterate select="g:edges($g)!(1 to 4), 1, 2">
       <xsl:param name="stack" as="array(map(*))" select="[]"/>
       <xsl:param name="state" as="xs:integer" select="0"/>
       <xsl:param name="visited" as="map(*)" select="map {}"/>
@@ -44,7 +44,7 @@
       <xsl:param name="vertex" as="item()" select="$vertex"/>
       <xsl:param name="parent" as="item()?"/>
       <xsl:param name="result" as="xs:integer" select="0"/>
-      <xsl:param name="articulation" as="xs:integer" select="-1"/>
+      <xsl:param name="component" as="array(*)" select="[]"/>
       <xsl:param name="vertices" as="item()*"/>
 
       <xsl:choose>
@@ -58,12 +58,12 @@
           <xsl:next-iteration>
             <xsl:with-param name="state" select="1"/>
             <xsl:with-param name="index" select="$index"/>
-            <xsl:with-param name="visited" 
+            <xsl:with-param name="visited"
               select="map:put($visited, $vertex, $index)"/>
             <xsl:with-param name="result" select="$index"/>
-            <xsl:with-param name="articulation" select="$articulation"/>
+            <xsl:with-param name="component" select="[$vertex]"/>
             <xsl:with-param name="vertices" select="$vertices"/>
-          </xsl:next-iteration>  
+          </xsl:next-iteration>
         </xsl:when>
         <xsl:when test="exists($vertices)">
           <xsl:variable name="next" as="item()" select="head($vertices)"/>
@@ -91,29 +91,24 @@
                   'vertex': $vertex,
                   'parent': $parent,
                   'result': $result,
-                  'articulation': $articulation,
+                  'component': $component,
                   'vertices': $vertices
                 }"/>
 
               <xsl:next-iteration>
-                <xsl:with-param name="stack" 
+                <xsl:with-param name="stack"
                   select="array:insert-before($stack, 1, $frame)"/>
                 <xsl:with-param name="state" select="0"/>
                 <xsl:with-param name="vertex" select="$next"/>
                 <xsl:with-param name="parent" select="$vertex"/>
-                <xsl:with-param name="articulation" select="0"/>
               </xsl:next-iteration>
             </xsl:otherwise>
           </xsl:choose>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:if test="$articulation gt 0">
-            <xsl:sequence select="$vertex"/>
-          </xsl:if>
-
           <xsl:choose>
             <xsl:when test="array:size($stack) = 0">
-              <xsl:break/>
+              <xsl:break select="[$vertex][$index = 1]"/>
             </xsl:when>
             <xsl:otherwise>
               <xsl:variable name="frame" as="map(*)"
@@ -123,26 +118,32 @@
                 select="$visited($vertex)"/>
               <xsl:variable name="frame-result" as="xs:integer"
                 select="$frame?result"/>
+              <xsl:variable name="frame-component" as="array(*)"
+                select="$frame?component"/>
 
-              <xsl:variable name="articulation" as="xs:integer" select="
+              <xsl:if test="$result ge $vertex-index">
+                <xsl:sequence select="array:append($component, $vertex)"/>
+              </xsl:if>
+
+              <xsl:variable name="component" as="array(*)" select="
                 if ($result ge $vertex-index) then
-                  $frame?articulation + 1
+                  $frame-component
                 else
-                  $frame?articulation"/>
+                  array:join(($component, $frame-component))"/>
 
               <xsl:variable name="result" as="xs:integer" select="
                 if ($frame-result lt $result) then
                   $frame-result
                 else
                   $result"/>
-
+              
               <xsl:next-iteration>
                 <xsl:with-param name="stack" select="array:tail($stack)"/>
                 <xsl:with-param name="vertex" select="$vertex"/>
                 <xsl:with-param name="parent" select="$frame?parent"/>
                 <xsl:with-param name="vertices" select="$frame?vertices"/>
                 <xsl:with-param name="result" select="$result"/>
-                <xsl:with-param name="articulation" select="$articulation"/>
+                <xsl:with-param name="component" select="$component"/>
               </xsl:next-iteration>
             </xsl:otherwise>
           </xsl:choose>

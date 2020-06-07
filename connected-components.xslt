@@ -11,17 +11,15 @@
     See https://en.wikipedia.org/wiki/Component_(graph_theory).
 
       $g - a graph to traverse.
-      Returns a sequence of maps, where map has following fields:
-        index as xs:integer - a component index.
-        vertices as item()+ - a set of component vertices.
+      Returns a sequence of arrays, 
+        where each array is vertices of a connected component.
   -->
-  <xsl:function name="g:connected-components" as="map(*)*">
+  <xsl:function name="g:connected-components" as="array(*)*">
     <xsl:param name="g" as="map(*)"/>
 
     <xsl:variable name="vertices" as="item()*" select="g:vertices($g)"/>
 
     <xsl:iterate select="$vertices">
-      <xsl:param name="index" as="xs:integer" select="1"/>
       <xsl:param name="visited" as="map(*)" select="map {}"/>
 
       <xsl:variable name="vertex" as="item()" select="."/>
@@ -85,11 +83,9 @@
           <xsl:variable name="visited" as="map(*)"
             select="$next[last()]"/>
 
-          <xsl:sequence 
-            select="map { 'index': $index, 'vertices': $vertices }"/>
+          <xsl:sequence select="array { $vertices }"/>
 
           <xsl:next-iteration>
-            <xsl:with-param name="index" select="$index + 1"/>
             <xsl:with-param name="visited" select="$visited"/>
           </xsl:next-iteration>
         </xsl:otherwise>
