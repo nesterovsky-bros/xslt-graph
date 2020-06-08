@@ -21,7 +21,7 @@
 </xsl:text>
 
       <xsl:for-each select="$components">
-        <xsl:sort select="?1"/>
+        <xsl:sort select="min(?*)"/>
         
         <xsl:text>Component: </xsl:text>
         <xsl:value-of select="sort(?*)"/>

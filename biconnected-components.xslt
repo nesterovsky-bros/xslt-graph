@@ -43,8 +43,8 @@
       <xsl:param name="index" as="xs:integer" select="0"/>
       <xsl:param name="vertex" as="item()" select="$vertex"/>
       <xsl:param name="parent" as="item()?"/>
-      <xsl:param name="result" as="xs:integer" select="0"/>
-      <xsl:param name="component" as="array(*)" select="[]"/>
+      <xsl:param name="result-index" as="xs:integer" select="0"/>
+      <xsl:param name="result-component" as="array(*)" select="[]"/>
       <xsl:param name="vertices" as="item()*"/>
 
       <xsl:choose>
@@ -60,8 +60,8 @@
             <xsl:with-param name="index" select="$index"/>
             <xsl:with-param name="visited"
               select="map:put($visited, $vertex, $index)"/>
-            <xsl:with-param name="result" select="$index"/>
-            <xsl:with-param name="component" select="[$vertex]"/>
+            <xsl:with-param name="result-index" select="$index"/>
+            <xsl:with-param name="result-component" select="[$vertex]"/>
             <xsl:with-param name="vertices" select="$vertices"/>
           </xsl:next-iteration>
         </xsl:when>
@@ -73,14 +73,14 @@
 
           <xsl:choose>
             <xsl:when test="exists($next-index)">
-              <xsl:variable name="result" as="xs:integer" select="
-                if ($next-index lt $result) then
+              <xsl:variable name="result-index" as="xs:integer" select="
+                if ($next-index lt $result-index) then
                   $next-index
                 else
-                  $result"/>
+                  $result-index"/>
 
               <xsl:next-iteration>
-                <xsl:with-param name="result" select="$result"/>
+                <xsl:with-param name="result-index" select="$result-index"/>
                 <xsl:with-param name="vertices" select="$vertices"/>
               </xsl:next-iteration>
             </xsl:when>
@@ -90,8 +90,8 @@
                 {
                   'vertex': $vertex,
                   'parent': $parent,
-                  'result': $result,
-                  'component': $component,
+                  'index': $result-index,
+                  'component': $result-component,
                   'vertices': $vertices
                 }"/>
 
@@ -116,34 +116,36 @@
               <xsl:variable name="vertex" as="item()" select="$frame?vertex"/>
               <xsl:variable name="vertex-index" as="xs:integer?"
                 select="$visited($vertex)"/>
-              <xsl:variable name="frame-result" as="xs:integer"
-                select="$frame?result"/>
+              <xsl:variable name="frame-index" as="xs:integer"
+                select="$frame?index"/>
               <xsl:variable name="frame-component" as="array(*)"
                 select="$frame?component"/>
 
-              <xsl:if test="$result ge $vertex-index">
-                <xsl:sequence select="array:append($component, $vertex)"/>
+              <xsl:if test="$result-index ge $vertex-index">
+                <xsl:sequence 
+                  select="array:append($result-component, $vertex)"/>
               </xsl:if>
 
-              <xsl:variable name="component" as="array(*)" select="
-                if ($result ge $vertex-index) then
+              <xsl:variable name="result-component" as="array(*)" select="
+                if ($result-index ge $vertex-index) then
                   $frame-component
                 else
-                  array:join(($component, $frame-component))"/>
+                  array:join(($result-component, $frame-component))"/>
 
-              <xsl:variable name="result" as="xs:integer" select="
-                if ($frame-result lt $result) then
-                  $frame-result
+              <xsl:variable name="result-index" as="xs:integer" select="
+                if ($frame-index lt $result-index) then
+                  $frame-index
                 else
-                  $result"/>
+                  $result-index"/>
               
               <xsl:next-iteration>
                 <xsl:with-param name="stack" select="array:tail($stack)"/>
                 <xsl:with-param name="vertex" select="$vertex"/>
                 <xsl:with-param name="parent" select="$frame?parent"/>
                 <xsl:with-param name="vertices" select="$frame?vertices"/>
-                <xsl:with-param name="result" select="$result"/>
-                <xsl:with-param name="component" select="$component"/>
+                <xsl:with-param name="result-index" select="$result-index"/>
+                <xsl:with-param name="result-component" 
+                  select="$result-component"/>
               </xsl:next-iteration>
             </xsl:otherwise>
           </xsl:choose>
